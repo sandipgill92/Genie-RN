@@ -137,3 +137,78 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# -------------------------
+# React Native
+# -------------------------
+
+# Android
+android/app/build/
+android/.gradle/
+android/build/
+android/local.properties
+android/*.keystore
+!android/app/debug.keystore
+android/app/release/
+*.apk
+*.aab
+
+# iOS
+ios/build/
+ios/Pods/
+ios/*.xcworkspace/xcuserdata/
+ios/*.xcodeproj/xcuserdata/
+ios/*.xcodeproj/project.xcworkspace/xcshareddata/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# CocoaPods
+ios/Podfile.lock
+
+# React Native Metro bundler cache
+.metro-health-check*
+.metro-cache/
+
+# React Native CLI
+.react-native/
+
+# Expo (if applicable)
+.expo/
+.expo-shared/
+web-build/
+dist/
+
+# Flipper
+ios/Flipper/
+android/app/src/debug/java/com/*/ReactNativeFlipper.java
+
+# Hermes
+android/app/src/main/assets/index.android.bundle
+android/app/src/main/assets/index.android.bundle.meta
+ios/main.jsbundle
+
+# Watchman
+.watchmanconfig
+
+# Ruby / Bundler (for iOS tooling)
+vendor/bundle/
+.bundle/
+Gemfile.lock
+
+# Fastlane (if used)
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output/
+
+# VSCode
+.vscode/
+
+# JetBrains / Android Studio
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
