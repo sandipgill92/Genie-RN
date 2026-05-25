@@ -150,6 +150,7 @@ android/local.properties
 android/*.keystore
 !android/app/debug.keystore
 android/app/release/
+android/app/.cxx/
 *.apk
 *.aab
 
