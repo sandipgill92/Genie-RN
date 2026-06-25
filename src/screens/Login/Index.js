@@ -17,29 +17,63 @@ import AppleIcon from '../../assets/svg/AppleIcon';
 import FormBg from '../../assets/svg/FormBg';
 import ShowPassIcon from '../../assets/svg/ShowPassIcon';
 import HiddenPassIcon from '../../assets/svg/HiddenPassIcon';
-// import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useDispatch } from 'react-redux';
+import { loginUser } from '../../redux/LoginSlice';
 
 const Login = ({ navigation }) => {
+  const dispatch = useDispatch();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const contentSlideAnim = useRef(new Animated.Value(-300)).current;
+  const contentSlideAnim = useRef(new Animated.Value(300)).current;
 
   const handleLogin = () => {
-    console.log('Login pressed', { email, password });
-    navigation.navigate('LocationPermission');
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+
+    if (!trimmedEmail || !trimmedPassword) {
+      setErrorMessage('Please enter both email/mobile and password.');
+      return;
+    }
+
+    setErrorMessage('');
+
+    dispatch(loginUser({ email: trimmedEmail, password: trimmedPassword }))
+      .unwrap()
+      .then(() => {
+        navigation.navigate('Home');
+      })
+      .catch(err => {
+        setErrorMessage(err?.message || 'Login failed. Try again.');
+      });
+
+    // dispatch(loginUser({ email: trimmedEmail, password: trimmedPassword }))
+    //   .unwrap()
+    //   .then(() => {
+    //     navigation.navigate('Home');
+    //   })
+    //   .catch(err => {
+    //     if (
+    //       err?.message?.toLowerCase().includes('verify otp') ||
+    //       err?.message?.toLowerCase().includes('not verified')
+    //     ) {
+    //       navigation.navigate('OTP'); // OTP screen pe bhej do
+    //     } else {
+    //       setErrorMessage(err?.message || 'Login failed. Try again.');
+    //     }
+    //   });
   };
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.spring(contentSlideAnim, {
-        toValue: 0,
-        useNativeDriver: true,
-        tension: 30,
-        friction: 7,
-      }),
-    ]).start();
+    Animated.spring(contentSlideAnim, {
+      toValue: 0,
+      useNativeDriver: true,
+      tension: 30,
+      friction: 7,
+    }).start();
   }, []);
 
   return (
@@ -70,27 +104,35 @@ const Login = ({ navigation }) => {
 
               <View style={styles.formContainer}>
                 <TextInput
+                  testID="email-input"
                   style={styles.input}
                   placeholder="Mobile number* / Email Address*"
                   placeholderTextColor={appColors.placeholder}
                   value={email}
-                  onChangeText={setEmail}
+                  onChangeText={text => {
+                    setEmail(text);
+                    if (errorMessage) setErrorMessage('');
+                  }}
                   keyboardType="email-address"
                   autoCapitalize="none"
                 />
 
                 <View style={styles.passwordContainer}>
                   <TextInput
+                    testID="password-input"
                     style={styles.passwordInput}
                     placeholder="Password"
                     placeholderTextColor={appColors.placeholder}
                     value={password}
-                    onChangeText={setPassword}
+                    onChangeText={text => {
+                      setPassword(text);
+                      if (errorMessage) setErrorMessage('');
+                    }}
                     secureTextEntry={!showPassword}
                   />
                   <TouchableOpacity
                     style={styles.eyeIcon}
-                    onPress={() => setShowPassword(!showPassword)}
+                    onPress={() => setShowPassword(prev => !prev)}
                   >
                     {showPassword ? <ShowPassIcon /> : <HiddenPassIcon />}
                   </TouchableOpacity>
@@ -98,14 +140,23 @@ const Login = ({ navigation }) => {
 
                 <TouchableOpacity
                   style={styles.forgotPassword}
-                  onPress={() => navigation.navigate('ForgotPassword')}
+                  onPress={() =>
+                    navigation.navigate('ForgotPasswordEmailNumber')
+                  }
                 >
                   <Text style={styles.forgotPasswordText}>
                     Forgot Password?
                   </Text>
                 </TouchableOpacity>
 
+                {errorMessage ? (
+                  <Text testID="error-text" style={styles.errorText}>
+                    {errorMessage}
+                  </Text>
+                ) : null}
+
                 <TouchableOpacity
+                  testID="login-button"
                   style={styles.loginButton}
                   onPress={handleLogin}
                 >
@@ -120,19 +171,17 @@ const Login = ({ navigation }) => {
 
                 <View style={styles.socialButtons}>
                   <TouchableOpacity style={styles.socialButton}>
-                    <View style={[styles.socialIcon]}>
+                    <View style={styles.socialIcon}>
                       <GoogleIcon />
                     </View>
                   </TouchableOpacity>
-
                   <TouchableOpacity style={styles.socialButton}>
-                    <View style={[styles.socialIcon]}>
+                    <View style={styles.socialIcon}>
                       <FacebookIcon />
                     </View>
                   </TouchableOpacity>
-
                   <TouchableOpacity style={styles.socialButton}>
-                    <View style={[styles.socialIcon]}>
+                    <View style={styles.socialIcon}>
                       <AppleIcon />
                     </View>
                   </TouchableOpacity>
@@ -156,6 +205,7 @@ const Login = ({ navigation }) => {
     </>
   );
 };
+
 export default Login;
 
 const styles = StyleSheet.create({
@@ -216,7 +266,6 @@ const styles = StyleSheet.create({
     paddingRight: 50,
     fontSize: 15,
     color: appColors.white,
-    paddingRight: 50,
   },
   eyeIcon: {
     position: 'absolute',
@@ -233,6 +282,11 @@ const styles = StyleSheet.create({
   forgotPasswordText: {
     color: appColors.white,
     fontSize: 13,
+  },
+  errorText: {
+    color: '#ffcccc',
+    fontSize: 12,
+    marginBottom: 12,
   },
   loginButton: {
     backgroundColor: appColors.black,

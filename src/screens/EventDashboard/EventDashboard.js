@@ -21,6 +21,11 @@ import RightIcon from '../../assets/svg/RightIcon';
 import UserIcon from '../../assets/svg/UserIcon';
 import ChatGreenIcon from '../../assets/svg/ChatGreenIcon';
 import TermConditionIcon from '../../assets/svg/TermConditionIcon';
+import TimingIcon from '../../assets/svg/TimingIcon';
+import MatchBallIcon from '../../assets/svg/MatchBallIcon';
+import UserGroupIcon from '../../assets/svg/UserGroupIcon';
+import HeighLightIcon from '../../assets/svg/HeighLightIcon';
+import VIPTicketIcon from '../../assets/svg/VIPTicketIcon';
 
 const PROHIBITED_LEFT = ['Outside food', 'Drones', 'Weapons', 'Fireworks'];
 const PROHIBITED_RIGHT = [
@@ -41,6 +46,7 @@ const INSTRUCTIONS = [
 const EventDashboard = ({ navigation }) => {
   const [expanded, setExpanded] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const [cardExpanded, setCardExpanded] = useState(false);
 
   return (
     <>
@@ -70,21 +76,62 @@ const EventDashboard = ({ navigation }) => {
             Skinz and Nipples | St. Catherine
           </Text>
 
-          <View style={styles.cardBoxStyle}>
-            <InfoRow
+          {/* <View style={styles.cardBoxStyle}> */}
+          {/* <InfoRow
               icon={<CalanderIcon />}
               label="Saturday, August 2 — 12 PM onwards"
               sub="Gates open at 11:30 AM"
               first
-            />
+            /> */}
+
+          <View style={styles.cardBoxStyle} activeOpacity={0.9}>
             <InfoRow
-              icon={<LocationIconOutline width={24} height={24} />}
-              label="Ewerton Sports Complex,
-              St. Catherine"
-              sub="8.3 km away"
-              last
+              icon={<CalanderIcon />}
+              label="Friday, 7 June — 2 PM onwards"
+              sub="Gates open at 11:30 AM"
+              first
             />
+            <TouchableOpacity onPress={() => setCardExpanded(!cardExpanded)}>
+              <InfoRow
+                icon={<LocationIconOutline width={24} height={24} />}
+                label="O. Shirley Recreation Ground, British Virgin Islands"
+                sub="8.3 km away"
+                last={!cardExpanded} // last tabhi hoga jab collapsed ho
+              />
+
+              {/* ── DROPDOWN CONTENT ── */}
+              {cardExpanded && (
+                <View style={{ marginTop: 8 }}>
+                  {[
+                    { icon: <TimingIcon />, label: '1 Hour 30mins' },
+                    {
+                      icon: <MatchBallIcon />,
+                      label: 'Match Type: International Qualifier',
+                    },
+                    { icon: <UserGroupIcon />, label: 'All age groups' },
+                    {
+                      icon: <HeighLightIcon />,
+                      label: 'Highlight: Road to 2026 Campaign',
+                    },
+                    {
+                      icon: <VIPTicketIcon />,
+                      label: 'Ticket Type: Standard & VIP Available',
+                    },
+                  ].map((item, i) => (
+                    <View key={i} style={styles.dropdownRow}>
+                      {item.icon}
+                      <Text style={styles.dropdownText}>{item.label}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </TouchableOpacity>
+            {/* Arrow indicator */}
+            {/* <Text style={styles.dropdownArrow}>
+                {cardExpanded ? '▲' : '▼'}
+              </Text> */}
           </View>
+          {/* </View> */}
 
           {/* About */}
           <SectionTitle title="About the event" />
@@ -212,7 +259,10 @@ const EventDashboard = ({ navigation }) => {
                 <Text style={styles.organizerName}>Ryan Thompson</Text>
               </View>
             </View>
-            <TouchableOpacity style={styles.chatBtn}>
+            <TouchableOpacity
+              style={styles.chatBtn}
+              onPress={() => navigation.navigate('Chat')}
+            >
               <ChatGreenIcon />
               <Text style={styles.chatBtnText}>Chat</Text>
             </TouchableOpacity>
@@ -703,6 +753,25 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     letterSpacing: 0.3,
+  },
+  dropdownRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 7,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+  },
+  dropdownText: {
+    fontSize: 13,
+    color: '#555',
+    flex: 1,
+  },
+  dropdownArrow: {
+    textAlign: 'center',
+    fontSize: 10,
+    color: '#aaa',
+    marginTop: 6,
   },
 });
 

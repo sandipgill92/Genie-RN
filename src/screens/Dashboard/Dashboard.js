@@ -35,6 +35,10 @@ import PopularEventIcon from '../../assets/svg/PopularEventIcon';
 import CocGlassIcon from '../../assets/svg/CocGlassIcon';
 import TheatresNearMeIcon from '../../assets/svg/TheatresNearMeIcon';
 import UpcomingMovieIcon from '../../assets/svg/UpcomingMovieIcon';
+import SoccerIcon from '../../assets/svg/SoccerIcon';
+import TrackFeildIcon from '../../assets/svg/TrackFeildIcon';
+import BasketballIcon from '../../assets/svg/BasketballIcon';
+import LinearGradient from 'react-native-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.7;
@@ -52,6 +56,18 @@ const SORT_OPTIONS = [
   'Price: High to Low',
   'Distance: Nearest First',
 ];
+
+const SORT_OPTIONS_SPORT = [
+  'Trending Now',
+  'Most Watched',
+  'Upcoming Matches/Events',
+  'Live Now',
+  'Recently Added',
+  'Top Rated / Popular Teams',
+  'Nearby Venues',
+  'Price (Low to High / High to Low)',
+];
+
 const MOVIES_OPTIONS = ['2D', '4DX3D', '3D', '4DX-2D'];
 
 const GENRE_OPTIONS = [
@@ -77,6 +93,19 @@ const GENRE_OPTIONS2 = [
   'Fantasy',
   'Horror',
   'Mystery',
+];
+
+const GENRE_SPORT = [
+  'Football / Soccer',
+  'Cricket',
+  'Basketball',
+  'Athletics',
+  'Boxing / MMA',
+  'Tennis',
+  'Rugby',
+  'Baseball',
+  'Hockey',
+  'Esports / Gaming Competitions',
 ];
 
 const FilterBottomSheet = ({ visible, onClose }) => {
@@ -382,6 +411,179 @@ const FilterBottomSheetMovies = ({ visible, onClose }) => {
                   </TouchableOpacity>
                 ))
               : GENRE_OPTIONS2.map(opt => {
+                  const checked = selectedGenres.includes(opt);
+                  return (
+                    <TouchableOpacity
+                      key={opt}
+                      style={fs.optionRow}
+                      onPress={() => toggleGenre(opt)}
+                      activeOpacity={0.7}
+                    >
+                      {/* Checkbox */}
+                      <View style={[fs.checkbox, checked && fs.checkboxActive]}>
+                        {checked && <Text style={fs.checkmark}>✓</Text>}
+                      </View>
+                      <Text
+                        style={[fs.optionText, checked && fs.optionTextActive]}
+                      >
+                        {opt}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+          </ScrollView>
+        </View>
+
+        {/* Footer */}
+        <View style={fs.footer}>
+          <TouchableOpacity onPress={handleClearAll} style={fs.clearBtn}>
+            <Text style={fs.clearText}>Clear all</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleApply} style={fs.applyBtn}>
+            <Text style={fs.applyText}>Apply</Text>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
+    </Modal>
+  );
+};
+
+const FilterBottomSport = ({ visible, onClose }) => {
+  const [activeTab, setActiveTab] = useState('sort by'); // 'sort' | 'genre'
+  const [selectedSport, setSelectedSport] = useState('Trending Now');
+  const [selectedGenres, setSelectedGenres] = useState('Football / Soccer');
+  const slideAnim = useRef(new Animated.Value(height)).current;
+
+  useEffect(() => {
+    if (visible) {
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        useNativeDriver: true,
+        bounciness: 3,
+        speed: 14,
+      }).start();
+    } else {
+      Animated.timing(slideAnim, {
+        toValue: height,
+        duration: 260,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [visible]);
+
+  const toggleGenre = genre => {
+    setSelectedGenres(prev =>
+      prev.includes(genre) ? prev.filter(g => g !== genre) : [...prev, genre],
+    );
+  };
+
+  const handleClearAll = () => {
+    setSelectedSPORT('Trending Now');
+    setSelectedGenres([]);
+  };
+
+  const handleApply = () => {
+    onClose();
+  };
+
+  if (!visible) return null;
+
+  return (
+    <Modal
+      transparent
+      visible={visible}
+      animationType="none"
+      onRequestClose={onClose}
+    >
+      {/* Dimmed backdrop */}
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={fs.backdrop} />
+      </TouchableWithoutFeedback>
+
+      {/* Sheet */}
+      <Animated.View
+        style={[fs.sheet, { transform: [{ translateY: slideAnim }] }]}
+      >
+        {/* Handle bar */}
+        <View style={fs.handle} />
+
+        {/* Header */}
+        <View style={fs.header}>
+          <Text style={fs.headerTitle}>Filter By</Text>
+          <TouchableOpacity onPress={onClose} style={fs.closeBtn}>
+            <Text style={fs.closeX}>✕</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Two-panel body */}
+        <View style={fs.body}>
+          {/* ── Left sidebar tabs ── */}
+          <View style={fs.sidebar}>
+            <TouchableOpacity
+              style={[fs.sideTab, activeTab === 'sort by' && fs.sideTabActive]}
+              onPress={() => setActiveTab('sort by')}
+              activeOpacity={0.8}
+            >
+              <Text
+                style={[
+                  fs.sideTabText,
+                  activeTab === 'sort' && fs.sideTabTextActive,
+                ]}
+              >
+                Sort By
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[fs.sideTab, activeTab === 'genre' && fs.sideTabActive]}
+              onPress={() => setActiveTab('genre')}
+              activeOpacity={0.8}
+            >
+              <Text
+                style={[
+                  fs.sideTabText,
+                  activeTab === 'genre' && fs.sideTabTextActive,
+                ]}
+              >
+                Genre
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* ── Right options panel ── */}
+          <ScrollView
+            style={fs.optionsPanel}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 8 }}
+          >
+            {activeTab === 'sort by'
+              ? SORT_OPTIONS_SPORT.map(opt => (
+                  <TouchableOpacity
+                    key={opt}
+                    style={fs.optionRow}
+                    onPress={() => setSelectedSport(opt)}
+                    activeOpacity={0.7}
+                  >
+                    {/* Radio */}
+                    <View
+                      style={[
+                        fs.radio,
+                        selectedSport === opt && fs.radioActive,
+                      ]}
+                    >
+                      {selectedSport === opt && <View style={fs.radioDot} />}
+                    </View>
+                    <Text
+                      style={[
+                        fs.optionText,
+                        selectedSport === opt && fs.optionTextActive,
+                      ]}
+                    >
+                      {opt}
+                    </Text>
+                  </TouchableOpacity>
+                ))
+              : GENRE_SPORT.map(opt => {
                   const checked = selectedGenres.includes(opt);
                   return (
                     <TouchableOpacity
@@ -778,10 +980,14 @@ const NUM_COLUMNS = 2;
 const CARD_WIDTH2 = (width - CARD_MARGIN2 * 6) / NUM_COLUMNS;
 const POSTER_HEIGHT = CARD_WIDTH2 * 1.3; // ~cinema aspect ra
 
-const Dashboard = ({ navigation }) => {
-  const [selectedTab, setSelectedTab] = useState('FOR YOU');
+const Dashboard = ({ navigation, route }) => {
+  const [selectedTab, setSelectedTab] = useState(
+    route?.params?.selectedTab || 'FOR YOU',
+  );
+
   const [filterVisible, setFilterVisible] = useState(false);
   const [filterVisible2, setFilterVisible2] = useState(false);
+  const [filterVisible3, setFilterVisible3] = useState(false);
 
   const tabs = [
     {
@@ -1289,7 +1495,212 @@ const Dashboard = ({ navigation }) => {
           </ScrollView>
         ) : null}
 
-        {selectedTab === 'SPORTS' ? null : null}
+        {selectedTab === 'SPORTS' ? (
+          <ScrollView
+            style={styles.content}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <LeftLine />
+                <Text style={styles.sectionTitle}>SPOTLIGHT</Text>
+                <RightLine />
+              </View>
+
+              <ScrollView
+                ref={scrollViewRef}
+                horizontal
+                pagingEnabled={false}
+                showsHorizontalScrollIndicator={false}
+                snapToInterval={CARD_WIDTH + CARD_SPACING}
+                decelerationRate="fast"
+                contentContainerStyle={styles.scrollViewContent}
+                onScroll={handleScroll}
+                scrollEventThrottle={16}
+              >
+                {movies.map((movie, index) => (
+                  <TouchableOpacity
+                    key={movie.id}
+                    style={[
+                      styles.movieCard1,
+                      index === 0 && styles.firstCard,
+                      index === movies.length - 1 && styles.lastCard,
+                      { borderWidth: 1 },
+                    ]}
+                    activeOpacity={0.9}
+                  >
+                    <Image
+                      source={{ uri: movie.image }}
+                      style={styles.movieImage}
+                      resizeMode="cover"
+                    />
+                    <View
+                      style={[
+                        styles.movieInfo1,
+                        {
+                          backgroundColor: 'transparent',
+                          alignItems: 'flex-start',
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.movieTitle1,
+                          { marginBottom: 2, color: appColors.primary },
+                        ]}
+                      >
+                        {movie.title}
+                      </Text>
+                      <View style={styles.ratingContainer}>
+                        <Text
+                          style={[
+                            styles.ratingText,
+                            {
+                              color: appColors.black,
+                              fontWeight: '400',
+                              marginBottom: 2,
+                            },
+                          ]}
+                        >
+                          {movie.rating} ({movie.reviews})
+                        </Text>
+                      </View>
+                      <Text
+                        style={[
+                          styles.ratingText,
+                          { color: '#b9b9b9', fontWeight: '400' },
+                        ]}
+                      >
+                        {movie.rating} ({movie.reviews})
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+              <View style={styles.paginationContainer}>
+                {movies.map((_, index) => (
+                  <View
+                    key={index}
+                    style={[
+                      styles.dot,
+                      index === currentIndex
+                        ? styles.activeDot
+                        : styles.inactiveDot,
+                    ]}
+                  />
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <LeftLine />
+                <Text style={styles.sectionTitle}>ALL SPORT</Text>
+                <RightLine />
+              </View>
+              <ScrollView
+                horizontal={true}
+                showsHorizontalScrollIndicator={false}
+              >
+                <View style={styles.slideContainer}>
+                  {/* Filters chip – opens bottom sheet */}
+                  <LinearGradient
+                    colors={['#00c2784f', '#aaffde83']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={[styles.button, { borderRadius: 8 }]}
+                  >
+                    <TouchableOpacity
+                      style={styles.slideBtn}
+                      onPress={() => setFilterVisible3(true)}
+                    >
+                      <FilterEventIcon />
+                      <Text>Filters</Text>
+                      <DownIcon />
+                    </TouchableOpacity>
+                  </LinearGradient>
+                  <LinearGradient
+                    colors={['#00c2784f', '#aaffde83']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={[styles.button, { borderRadius: 8 }]}
+                  >
+                    <View style={styles.slideBtn}>
+                      <SoccerIcon />
+                      <Text>Soccer</Text>
+                    </View>
+                  </LinearGradient>
+                  <LinearGradient
+                    colors={['#0077494f', '#aaffde83']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={[styles.button, { borderRadius: 8 }]}
+                  >
+                    <View style={styles.slideBtn}>
+                      <TrackFeildIcon />
+                      <Text>Track & Field</Text>
+                    </View>
+                  </LinearGradient>
+
+                  <LinearGradient
+                    colors={['#00c2784f', '#aaffde83']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={[styles.button, { borderRadius: 8 }]}
+                  >
+                    <View style={styles.slideBtn}>
+                      <BasketballIcon />
+                      <Text>Basketball</Text>
+                    </View>
+                  </LinearGradient>
+                </View>
+              </ScrollView>
+
+              {blockbusterMovies.map(movie => (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('EventDashboard')}
+                >
+                  <View key={movie.id} style={styles.movieCard}>
+                    <Image
+                      source={movie.image}
+                      style={styles.moviePoster}
+                      resizeMode="cover"
+                    />
+                    <View style={styles.movieDetails}>
+                      <View style={styles.movieInfo}>
+                        <Text
+                          style={[
+                            styles.movieTitle,
+                            {
+                              color: appColors.primary,
+                            },
+                          ]}
+                        >
+                          {movie.title}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.movieMeta,
+                            {
+                              color: appColors.black,
+                              marginBottom: 2,
+                              fontSize: 13,
+                            },
+                          ]}
+                        >
+                          National Stadium,Kingston
+                        </Text>
+                        <Text style={styles.movieMeta}>
+                          An electrifying night of sprints and hurdles awaits!
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </ScrollView>
+        ) : null}
 
         {/* Main Content – EVENTS */}
         {selectedTab === 'EVENTS' ? (
@@ -1371,27 +1782,57 @@ const Dashboard = ({ navigation }) => {
                 <View style={styles.slideContainer}>
                   {/* Filters chip – opens bottom sheet */}
 
-                  <TouchableOpacity
-                    style={styles.slideBtn}
-                    onPress={() => setFilterVisible(true)}
+                  <LinearGradient
+                    colors={['#00c2784f', '#aaffde83']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={[styles.button, { borderRadius: 8 }]}
                   >
-                    <FilterEventIcon />
-                    <Text>Filters</Text>
-                    <DownIcon />
-                  </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.slideBtn}
+                      onPress={() => setFilterVisible(true)}
+                    >
+                      <FilterEventIcon />
+                      <Text>Filters</Text>
+                      <DownIcon />
+                    </TouchableOpacity>
+                  </LinearGradient>
 
-                  <View style={styles.slideBtn}>
-                    <ArtIcon />
-                    <Text>Art</Text>
-                  </View>
-                  <View style={styles.slideBtn}>
-                    <MusicIcon />
-                    <Text>Music</Text>
-                  </View>
-                  <View style={styles.slideBtn}>
-                    <PopularEventIcon />
-                    <Text>Popular Event</Text>
-                  </View>
+                  <LinearGradient
+                    colors={['#00c2784f', '#aaffde83']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={[styles.button, { borderRadius: 8 }]}
+                  >
+                    <View style={styles.slideBtn}>
+                      <ArtIcon />
+                      <Text>Art</Text>
+                    </View>
+                  </LinearGradient>
+
+                  <LinearGradient
+                    colors={['#00c2784f', '#aaffde83']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={[styles.button, { borderRadius: 8 }]}
+                  >
+                    <View style={styles.slideBtn}>
+                      <MusicIcon />
+                      <Text>Music</Text>
+                    </View>
+                  </LinearGradient>
+
+                  <LinearGradient
+                    colors={['#00c2784f', '#aaffde83']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={[styles.button, { borderRadius: 8 }]}
+                  >
+                    <View style={styles.slideBtn}>
+                      <PopularEventIcon />
+                      <Text>Popular Event</Text>
+                    </View>
+                  </LinearGradient>
                 </View>
               </ScrollView>
 
@@ -1548,25 +1989,54 @@ const Dashboard = ({ navigation }) => {
                 >
                   <View style={styles.slideContainer}>
                     {/* Filters chip – opens bottom sheet */}
-
-                    <TouchableOpacity
-                      style={styles.slideBtn}
-                      onPress={() => setFilterVisible2(true)}
+                    <LinearGradient
+                      colors={['#00c2784f', '#aaffde83']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={[styles.button, { borderRadius: 8 }]}
                     >
-                      <FilterEventIcon />
-                      <Text>Filters</Text>
-                      <DownIcon />
-                    </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.slideBtn}
+                        onPress={() => setFilterVisible2(true)}
+                      >
+                        <FilterEventIcon />
+                        <Text>Filters</Text>
+                        <DownIcon />
+                      </TouchableOpacity>
+                    </LinearGradient>
 
-                    <View style={styles.slideBtn}>
-                      <Text>Now Showing</Text>
-                    </View>
-                    <View style={styles.slideBtn}>
-                      <Text>Trending</Text>
-                    </View>
-                    <View style={styles.slideBtn}>
-                      <Text>Language</Text>
-                    </View>
+                    <LinearGradient
+                      colors={['#00c2784f', '#aaffde83']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={[styles.button, { borderRadius: 8 }]}
+                    >
+                      <View style={styles.slideBtn}>
+                        <Text>Now Showing</Text>
+                      </View>
+                    </LinearGradient>
+
+                    <LinearGradient
+                      colors={['#00c2784f', '#aaffde83']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={[styles.button, { borderRadius: 8 }]}
+                    >
+                      <View style={styles.slideBtn}>
+                        <Text>Trending</Text>
+                      </View>
+                    </LinearGradient>
+
+                    <LinearGradient
+                      colors={['#00c2784f', '#aaffde83']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={[styles.button, { borderRadius: 8 }]}
+                    >
+                      <View style={styles.slideBtn}>
+                        <Text>Language</Text>
+                      </View>
+                    </LinearGradient>
                   </View>
                 </ScrollView>
 
@@ -1594,6 +2064,11 @@ const Dashboard = ({ navigation }) => {
       <FilterBottomSheetMovies
         visible={filterVisible2}
         onClose={() => setFilterVisible2(false)}
+      />
+
+      <FilterBottomSport
+        visible={filterVisible3}
+        onClose={() => setFilterVisible3(false)}
       />
     </>
   );

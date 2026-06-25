@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,10 @@ import {
   StyleSheet,
   StatusBar,
   SafeAreaView,
+  Dimensions,
+  Animated,
+  Modal,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { appColors } from '../../utils/appColors';
 import UpcomingMovieIcon from '../../assets/svg/UpcomingMovieIcon';
@@ -18,12 +22,27 @@ import RightLine from '../../assets/svg/RightLine';
 import FilterEventIcon from '../../assets/svg/FilterEventIcon';
 import DownIcon from '../../assets/svg/DownIcon';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 const CARD_MARGIN2 = 8;
 const NUM_COLUMNS = 2;
 const CARD_WIDTH2 = (width - CARD_MARGIN2 * 6) / NUM_COLUMNS;
 const POSTER_HEIGHT = CARD_WIDTH2 * 1.3; // ~cinema aspect ra
+
+const MOVIES_OPTIONS = ['2D', '4DX3D', '3D', '4DX-2D'];
+
+const GENRE_OPTIONS2 = [
+  'Action',
+  'Adventure',
+  'Animation',
+  'Comedy',
+  'Crime',
+  'Drama',
+  'Family',
+  'Fantasy',
+  'Horror',
+  'Mystery',
+];
 
 const nowShowingMovies = [
   {
@@ -70,7 +89,409 @@ const MovieCard = ({ movie }) => (
   </View>
 );
 
+const FilterBottomSheetMovies = ({ visible, onClose }) => {
+  const [activeTab, setActiveTab] = useState('format'); // 'sort' | 'genre'
+  const [selectedSort, setSelectedSort] = useState('2D');
+  const [selectedGenres, setSelectedGenres] = useState([]);
+  const slideAnim = useRef(new Animated.Value(height)).current;
+
+  useEffect(() => {
+    if (visible) {
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        useNativeDriver: true,
+        bounciness: 3,
+        speed: 14,
+      }).start();
+    } else {
+      Animated.timing(slideAnim, {
+        toValue: height,
+        duration: 260,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [visible]);
+
+  const toggleGenre = genre => {
+    setSelectedGenres(prev =>
+      prev.includes(genre) ? prev.filter(g => g !== genre) : [...prev, genre],
+    );
+  };
+
+  const handleClearAll = () => {
+    setSelectedSort('2D');
+    setSelectedGenres([]);
+  };
+
+  const handleApply = () => {
+    onClose();
+  };
+
+  if (!visible) return null;
+
+  return (
+    <Modal
+      transparent
+      visible={visible}
+      animationType="none"
+      onRequestClose={onClose}
+    >
+      {/* Dimmed backdrop */}
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={fs.backdrop} />
+      </TouchableWithoutFeedback>
+
+      {/* Sheet */}
+      <Animated.View
+        style={[fs.sheet, { transform: [{ translateY: slideAnim }] }]}
+      >
+        {/* Handle bar */}
+        <View style={fs.handle} />
+
+        {/* Header */}
+        <View style={fs.header}>
+          <Text style={fs.headerTitle}>Filter By</Text>
+          <TouchableOpacity onPress={onClose} style={fs.closeBtn}>
+            <Text style={fs.closeX}>✕</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Two-panel body */}
+        <View style={fs.body}>
+          {/* ── Left sidebar tabs ── */}
+          <View style={fs.sidebar}>
+            <TouchableOpacity
+              style={[fs.sideTab, activeTab === 'format' && fs.sideTabActive]}
+              onPress={() => setActiveTab('format')}
+              activeOpacity={0.8}
+            >
+              <Text
+                style={[
+                  fs.sideTabText,
+                  activeTab === 'format' && fs.sideTabTextActive,
+                ]}
+              >
+                Format
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[fs.sideTab, activeTab === 'genre' && fs.sideTabActive]}
+              onPress={() => setActiveTab('genre')}
+              activeOpacity={0.8}
+            >
+              <Text
+                style={[
+                  fs.sideTabText,
+                  activeTab === 'genre' && fs.sideTabTextActive,
+                ]}
+              >
+                Genre
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* ── Right options panel ── */}
+          <ScrollView
+            style={fs.optionsPanel}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 8 }}
+          >
+            {activeTab === 'format'
+              ? MOVIES_OPTIONS.map(opt => (
+                  <TouchableOpacity
+                    key={opt}
+                    style={fs.optionRow}
+                    onPress={() => setSelectedSort(opt)}
+                    activeOpacity={0.7}
+                  >
+                    {/* Radio */}
+                    <View
+                      style={[fs.radio, selectedSort === opt && fs.radioActive]}
+                    >
+                      {selectedSort === opt && <View style={fs.radioDot} />}
+                    </View>
+                    <Text
+                      style={[
+                        fs.optionText,
+                        selectedSort === opt && fs.optionTextActive,
+                      ]}
+                    >
+                      {opt}
+                    </Text>
+                  </TouchableOpacity>
+                ))
+              : GENRE_OPTIONS2.map(opt => {
+                  const checked = selectedGenres.includes(opt);
+                  return (
+                    <TouchableOpacity
+                      key={opt}
+                      style={fs.optionRow}
+                      onPress={() => toggleGenre(opt)}
+                      activeOpacity={0.7}
+                    >
+                      {/* Checkbox */}
+                      <View style={[fs.checkbox, checked && fs.checkboxActive]}>
+                        {checked && <Text style={fs.checkmark}>✓</Text>}
+                      </View>
+                      <Text
+                        style={[fs.optionText, checked && fs.optionTextActive]}
+                      >
+                        {opt}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+          </ScrollView>
+        </View>
+
+        {/* Footer */}
+        <View style={fs.footer}>
+          <TouchableOpacity onPress={handleClearAll} style={fs.clearBtn}>
+            <Text style={fs.clearText}>Clear all</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleApply} style={fs.applyBtn}>
+            <Text style={fs.applyText}>Apply</Text>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
+    </Modal>
+  );
+};
+
+const SIDEBAR_W = 100;
+const GREEN = '#0F7754';
+const LIGHT_GREEN_BG = '#EAF4EF';
+
+const fs = StyleSheet.create({
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+  },
+  sheet: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: appColors.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 16,
+    maxHeight: height * 0.75,
+    shadowColor: appColors.black,
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 20,
+  },
+  handle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: 10,
+    marginBottom: 6,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingVertical: 14,
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: appColors.black,
+  },
+  closeBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeX: {
+    fontSize: 13,
+    color: appColors.black,
+    fontWeight: '600',
+  } /* ── Two-panel layout ── */,
+  body: {
+    flexDirection: 'row',
+    flex: 1,
+    minHeight: 300,
+  },
+
+  /* Left sidebar */
+  sidebar: {
+    width: SIDEBAR_W,
+  },
+  sideTab: {
+    paddingVertical: 18,
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+  },
+  sideTabActive: {
+    backgroundColor: LIGHT_GREEN_BG,
+  },
+  sideTabText: {
+    fontSize: 13,
+    color: appColors.black,
+    fontWeight: '500',
+  },
+  sideTabTextActive: {
+    color: appColors.black,
+    fontWeight: '700',
+  },
+
+  /* Right options panel */
+  optionsPanel: {
+    flex: 1,
+    backgroundColor: LIGHT_GREEN_BG,
+    paddingTop: 10,
+    paddingHorizontal: 16,
+  },
+  optionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 11,
+  },
+
+  /* Radio (Sort By) */
+  radio: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#C4C4C4',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    backgroundColor: appColors.white,
+  },
+  radioActive: {
+    borderColor: GREEN,
+  },
+  radioDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: GREEN,
+  },
+
+  /* Checkbox (Genre) */
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: '#C4C4C4',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    backgroundColor: appColors.white,
+  },
+  checkboxActive: {
+    backgroundColor: GREEN,
+    borderColor: GREEN,
+  },
+  checkmark: {
+    color: appColors.white,
+    fontSize: 12,
+    fontWeight: '700',
+    lineHeight: 14,
+  },
+
+  optionText: {
+    fontSize: 14,
+    color: appColors.black,
+  },
+  optionTextActive: {
+    color: appColors.black,
+    fontWeight: '600',
+  },
+
+  /* Footer */
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+    backgroundColor: appColors.white,
+  },
+  clearBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+  },
+  clearText: {
+    fontSize: 14,
+    color: appColors.black,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
+  },
+  applyBtn: {
+    backgroundColor: appColors.black,
+    borderRadius: 20,
+    paddingHorizontal: 52,
+    paddingVertical: 13,
+  },
+  applyText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: appColors.white,
+  },
+  group: {
+    paddingTop: 16,
+    paddingBottom: 8,
+    marginBottom: 4,
+    flexDirection: 'row',
+  },
+  groupLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#111',
+    marginBottom: 12,
+  },
+  optionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 9,
+  },
+  radio: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#D1D5DB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  radioActive: {
+    borderColor: '#0F7754',
+  },
+  radioDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#0F7754',
+  },
+  optionText: {
+    fontSize: 14,
+    color: '#555',
+  },
+  optionTextActive: {
+    color: '#111',
+    fontWeight: '600',
+  },
+});
+
 const UpcomingMovies = ({ navigation }) => {
+  const [filterVisible2, setFilterVisible2] = useState(false);
+
   return (
     <>
       <View style={styles.statusBar}>
@@ -95,49 +516,87 @@ const UpcomingMovies = ({ navigation }) => {
             </View>
           </View>
         </ImageBackground>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={styles.section}>
+            <View style={[styles.sectionHeader, { marginBottom: 24 }]}>
+              <LeftLine />
+              <Text style={styles.sectionTitle}>COMING SOON</Text>
+              <RightLine />
+            </View>
 
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <LeftLine />
-            <Text style={styles.sectionTitle}>NOW SHOWING</Text>
-            <RightLine />
-          </View>
-          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-            <View style={styles.slideContainer}>
-              {/* Filters chip – opens bottom sheet */}
+            <View style={styles.movieCard}>
+              <Image
+                source={require('../../assets/svg/EventImg').default}
+                style={styles.moviePoster}
+                resizeMode="cover"
+              />
 
-              <TouchableOpacity
-                style={styles.slideBtn}
-                onPress={() => setFilterVisible2(true)}
-              >
-                <FilterEventIcon />
-                <Text>Filters</Text>
-                <DownIcon />
-              </TouchableOpacity>
-
-              <View style={styles.slideBtn}>
-                <Text>Now Showing</Text>
-              </View>
-              <View style={styles.slideBtn}>
-                <Text>Trending</Text>
-              </View>
-              <View style={styles.slideBtn}>
-                <Text>Language</Text>
+              <View style={styles.movieDetails}>
+                <View style={styles.movieInfo}>
+                  <Text style={styles.movieTitle}>
+                    The Conjuring{'\n'} Last Rites
+                  </Text>
+                  <Text style={styles.movieMeta}>UA 16+ | English</Text>
+                  <Text style={[styles.movieMeta, { fontSize: 11 }]}>
+                    Release: September 5, 2025
+                  </Text>
+                </View>
+                <TouchableOpacity style={styles.bookButton}>
+                  <Text style={styles.bookButtonText}>Reminder</Text>
+                </TouchableOpacity>
               </View>
             </View>
-          </ScrollView>
 
-          <FlatList
-            data={nowShowingMovies}
-            keyExtractor={item => String(item.id)}
-            numColumns={NUM_COLUMNS}
-            contentContainerStyle={styles.listContent}
-            columnWrapperStyle={styles.columnWrapper}
-            renderItem={({ item }) => <MovieCard movie={item} />}
-            showsVerticalScrollIndicator={false}
-          />
-        </View>
+            <View style={styles.sectionHeader}>
+              <LeftLine />
+              <Text style={styles.sectionTitle}>NOW SHOWING</Text>
+              <RightLine />
+            </View>
+            <ScrollView
+              horizontal={true}
+              showsHorizontalScrollIndicator={false}
+            >
+              <View style={styles.slideContainer}>
+                {/* Filters chip – opens bottom sheet */}
+
+                <TouchableOpacity
+                  style={styles.slideBtn}
+                  onPress={() => setFilterVisible2(true)}
+                >
+                  <FilterEventIcon />
+                  <Text>Filters</Text>
+                  <DownIcon />
+                </TouchableOpacity>
+
+                <View style={styles.slideBtn}>
+                  <Text>This Month</Text>
+                </View>
+                <View style={styles.slideBtn}>
+                  <Text>Next Month</Text>
+                </View>
+                <View style={styles.slideBtn}>
+                  <Text>Language</Text>
+                </View>
+              </View>
+            </ScrollView>
+
+            <FlatList
+              data={nowShowingMovies}
+              keyExtractor={item => String(item.id)}
+              numColumns={NUM_COLUMNS}
+              contentContainerStyle={styles.listContent}
+              columnWrapperStyle={styles.columnWrapper}
+              renderItem={({ item }) => <MovieCard movie={item} />}
+              showsVerticalScrollIndicator={false}
+            />
+          </View>
+        </ScrollView>
       </SafeAreaView>
+
+      <FilterBottomSheetMovies
+        visible={filterVisible2}
+        onClose={() => setFilterVisible2(false)}
+      />
     </>
   );
 };
@@ -177,6 +636,7 @@ const styles = StyleSheet.create({
   },
   section: {
     paddingVertical: 20,
+    paddingHorizontal: 16,
   },
   screenMovies: {
     marginVertical: 20,
@@ -199,6 +659,7 @@ const styles = StyleSheet.create({
     gap: 10,
     marginTop: 10,
     marginBottom: 30,
+    paddingHorizontal: 16,
   },
   slideBtn: {
     paddingHorizontal: 12,
@@ -256,6 +717,54 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#888888',
     fontWeight: '400',
+  },
+
+  movieCard: {
+    borderRadius: 12,
+    backgroundColor: appColors.white,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    borderWidth: 1,
+    borderColor: appColors.inputLine,
+    overflow: 'hidden',
+    marginBottom: 40,
+  },
+  moviePoster: {
+    width: '100%',
+  },
+  movieDetails: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    padding: 16,
+    backgroundColor: appColors.white,
+  },
+  movieInfo: {
+    flex: 1,
+  },
+  movieTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: appColors.black,
+    marginBottom: 4,
+  },
+  movieMeta: {
+    fontSize: 12,
+    color: appColors.black,
+  },
+  bookButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: appColors.placeholder,
+    backgroundColor: appColors.white,
+  },
+  bookButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: appColors.black,
   },
 });
 

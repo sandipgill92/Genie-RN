@@ -17,6 +17,16 @@ const ForgotPassword = ({ navigation }) => {
   const [otp, setOtp] = useState(['', '', '', '']);
   const inputRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
 
+  useEffect(() => {
+    inputRefs[0].current.focus();
+  }, []);
+
+  const handleOtpChange = (text, index) => {
+    const newOtp = [...otp];
+    newOtp[index] = text;
+    setOtp(newOtp);
+  };
+
   const contentSlideAnim = useRef(new Animated.Value(-300)).current;
 
   useEffect(() => {
@@ -65,6 +75,7 @@ const ForgotPassword = ({ navigation }) => {
                       maxLength={1}
                       textAlign="center"
                       selectTextOnFocus
+                      onChangeText={text => handleOtpChange(text, index)}
                     />
                   ))}
                 </View>

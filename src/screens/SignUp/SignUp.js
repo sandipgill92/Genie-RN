@@ -15,17 +15,42 @@ import GoogleIcon from '../../assets/svg/GoogleIcon';
 import FacebookIcon from '../../assets/svg/FacebookIcon';
 import AppleIcon from '../../assets/svg/AppleIcon';
 import FormBg from '../../assets/svg/FormBg';
+import { registerUser } from '../../redux/RegisterSlice';
+import ShowPassIcon from '../../assets/svg/ShowPassIcon';
+import HiddenPassIcon from '../../assets/svg/HiddenPassIcon';
+import { useDispatch } from 'react-redux';
 
 const SignUp = ({ navigation }) => {
+  const dispatch = useDispatch();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const contentSlideAnim = useRef(new Animated.Value(300)).current;
 
+  console.log('handleSignUp', { handleSignUp });
+
   const handleSignUp = () => {
     console.log('Sign Up pressed', { email, password });
-    navigation.navigate('OTP');
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+
+    if (!trimmedEmail || !trimmedPassword) {
+      setErrorMessage('Please enter both email/mobile and password.');
+      return;
+    }
+
+    setErrorMessage('');
+    dispatch(registerUser({ email: trimmedEmail, password: trimmedPassword }))
+      .unwrap()
+      .then(() => {
+        navigation.navigate('OTP');
+      })
+      .catch(err => {
+        setErrorMessage(err?.message || 'Registration failed. Try again.');
+      });
   };
 
   useEffect(() => {
@@ -67,25 +92,52 @@ const SignUp = ({ navigation }) => {
 
               <View style={styles.formContainer}>
                 <TextInput
+                  testID="email-input"
                   style={styles.input}
                   placeholder="Mobile number* / Email Address*"
-                  placeholderTextColor={appColors.placeholder}
+                  placeholderTextColor="#eeeeee"
                   value={email}
-                  onChangeText={setEmail}
+                  onChangeText={text => {
+                    setEmail(text);
+                    if (errorMessage) {
+                      setErrorMessage('');
+                    }
+                  }}
                   keyboardType="email-address"
                   autoCapitalize="none"
                 />
 
-                <TextInput
-                  style={styles.input}
-                  placeholder="Password"
-                  placeholderTextColor={appColors.placeholder}
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={!showPassword}
-                />
+                <View style={styles.passwordContainer}>
+                  <TextInput
+                    testID="password-input"
+                    style={styles.input}
+                    placeholder="Password"
+                    placeholderTextColor="#eeeeee"
+                    value={password}
+                    onChangeText={text => {
+                      setPassword(text);
+                      if (errorMessage) {
+                        setErrorMessage('');
+                      }
+                    }}
+                    secureTextEntry={!showPassword}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setShowPassword(prev => !prev)}
+                    style={styles.eyeIcon}
+                  >
+                    {showPassword ? <ShowPassIcon /> : <HiddenPassIcon />}
+                  </TouchableOpacity>
+                </View>
+
+                {errorMessage ? (
+                  <Text testID="error-text" style={styles.errorText}>
+                    {errorMessage}
+                  </Text>
+                ) : null}
 
                 <TouchableOpacity
+                  testID="register-button"
                   style={styles.loginButton}
                   onPress={handleSignUp}
                 >
@@ -183,6 +235,27 @@ const styles = StyleSheet.create({
     color: appColors.white,
     marginBottom: 16,
   },
+  passwordContainer: {
+    position: 'relative',
+  },
+  passwordInput: {
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: appColors.border,
+    borderRadius: 16,
+    padding: 16,
+    paddingRight: 50,
+    fontSize: 15,
+    color: appColors.white,
+    paddingRight: 50,
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 16,
+    top: 24,
+    transform: [{ translateY: -11 }],
+    padding: 4,
+  },
   forgotPassword: {
     alignSelf: 'flex-end',
     marginBottom: 24,
@@ -204,6 +277,11 @@ const styles = StyleSheet.create({
     color: appColors.white,
     fontSize: 16,
     fontWeight: '600',
+  },
+  errorText: {
+    color: '#ffcccc',
+    fontSize: 12,
+    marginBottom: 12,
   },
   lineContainer: {
     flexDirection: 'row',

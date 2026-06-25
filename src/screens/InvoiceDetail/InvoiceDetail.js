@@ -278,7 +278,7 @@ const InvoiceDetail = ({ navigation }) => {
               disabled={!isConfirmEnabled}
               activeOpacity={0.85}
               onPress={() => {
-                /* handle confirm */
+                navigation.navigate('ReviewBooking');
               }}
             >
               <Text style={styles.confirmText}>Confirm</Text>

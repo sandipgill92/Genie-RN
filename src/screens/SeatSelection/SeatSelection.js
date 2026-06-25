@@ -9,33 +9,26 @@ import {
   Dimensions,
   StatusBar,
 } from 'react-native';
-import Svg, { Path, Circle, G, Text as SvgText } from 'react-native-svg';
-import { appColors } from '../../utils/appColors';
+import Svg, { Path, Circle, Line, Text as SvgText } from 'react-native-svg';
 import SettingIcon from '../../assets/svg/SettingIcon';
 import BackIcon from '../../assets/svg/BackIcon';
-import StageImg from '../../assets/svg/StageImg';
 
 const { width } = Dimensions.get('window');
 
-// ─── Seat Categories ─────────────────────────────────────────────────────────
 const SEAT_CATEGORIES = [
   {
     id: 'golden',
     label: 'Golden VIP',
     subtitle: 'Best View & Amenities',
     price: 'JMD $3,500',
-    color: '#F5C518',
-    discount: '20%',
-    percentage: 0.22,
+    color: '#C9A227',
   },
   {
     id: 'silver',
     label: 'Silver VIP',
     subtitle: 'Comfort & Proximity',
     price: 'JMD $2,000',
-    color: '#B0B0B0',
-    discount: '20%',
-    percentage: 0.18,
+    color: '#A8A8A8',
   },
   {
     id: 'platinum',
@@ -43,238 +36,267 @@ const SEAT_CATEGORIES = [
     subtitle: 'Premium Front Row',
     price: 'JMD $5,000',
     color: '#1A5C3A',
-    discount: '20%',
-    percentage: 0.3,
   },
   {
     id: 'standard',
     label: 'Standard',
     subtitle: 'General Access',
     price: 'JMD $1,000',
-    color: '#8B5E3C',
-    discount: '20%',
-    percentage: 0.3,
+    color: '#7B4F2E',
   },
 ];
 
 // ─── Donut Chart ──────────────────────────────────────────────────────────────
-const DonutChart = ({ categories, selectedId }) => {
-  const size = width * 0.72;
-  const cx = size / 2;
-  const cy = size / 2;
-  const outerR = size * 0.42;
-  const innerR = size * 0.265;
-  const ringGap = size * 0.03;
+const DonutChart = () => {
+  // Fixed SVG canvas: 360x340, donut centered at (180, 170)
+  const VW = 360;
+  const VH = 340;
+  const cx = 180;
+  const cy = 165;
+  const outerR = 100;
+  const innerR = 62;
 
-  const polarToCartesian = (cx, cy, r, angleDeg) => {
-    const rad = ((angleDeg - 90) * Math.PI) / 180;
-    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
-  };
+  const rad = deg => (deg * Math.PI) / 180;
+  const px = (r, deg) => cx + r * Math.cos(rad(deg));
+  const py = (r, deg) => cy + r * Math.sin(rad(deg));
 
-  const arcPath = (cx, cy, r, startAngle, endAngle) => {
-    const start = polarToCartesian(cx, cy, r, endAngle);
-    const end = polarToCartesian(cx, cy, r, startAngle);
-    const large = endAngle - startAngle > 180 ? 1 : 0;
-    return `M ${start.x} ${start.y} A ${r} ${r} 0 ${large} 0 ${end.x} ${end.y}`;
-  };
+  // Segment: start/end in degrees (0 = right, -90 = top)
+  // Total 360, gaps of 2deg each (4 gaps = 8deg total)
+  // Percentages: golden 22%, platinum 30%, standard 30%, silver 18%
+  // Sweeps (minus gap): 79.2-2=77.2, 108-2=106, 108-2=106, 64.8-2=62.8
+  const segs = [
+    { color: '#C9A227', start: -100, end: -100 + 77.2 }, // Golden VIP
+    { color: '#1A5C3A', start: -100 + 77.2 + 2, end: -100 + 77.2 + 2 + 106 }, // Platinum
+    {
+      color: '#7B4F2E',
+      start: -100 + 77.2 + 2 + 106 + 2,
+      end: -100 + 77.2 + 2 + 106 + 2 + 106,
+    }, // Standard
+    {
+      color: '#A8A8A8',
+      start: -100 + 77.2 + 2 + 106 + 2 + 106 + 2,
+      end: -100 + 77.2 + 2 + 106 + 2 + 106 + 2 + 62.8,
+    }, // Silver
+  ];
 
-  const donutSegment = (cx, cy, outerR, innerR, startAngle, endAngle) => {
-    const p1 = polarToCartesian(cx, cy, outerR, startAngle);
-    const p2 = polarToCartesian(cx, cy, outerR, endAngle);
-    const p3 = polarToCartesian(cx, cy, innerR, endAngle);
-    const p4 = polarToCartesian(cx, cy, innerR, startAngle);
-    const large = endAngle - startAngle > 180 ? 1 : 0;
+  const segPath = s => {
+    const large = s.end - s.start > 180 ? 1 : 0;
     return [
-      `M ${p1.x} ${p1.y}`,
-      `A ${outerR} ${outerR} 0 ${large} 1 ${p2.x} ${p2.y}`,
-      `L ${p3.x} ${p3.y}`,
-      `A ${innerR} ${innerR} 0 ${large} 0 ${p4.x} ${p4.y}`,
+      `M ${px(outerR, s.start)} ${py(outerR, s.start)}`,
+      `A ${outerR} ${outerR} 0 ${large} 1 ${px(outerR, s.end)} ${py(
+        outerR,
+        s.end,
+      )}`,
+      `L ${px(innerR, s.end)} ${py(innerR, s.end)}`,
+      `A ${innerR} ${innerR} 0 ${large} 0 ${px(innerR, s.start)} ${py(
+        innerR,
+        s.start,
+      )}`,
       'Z',
     ].join(' ');
   };
 
-  // Build segments with gap
-  const GAP_DEG = 3;
-  let currentAngle = -30;
-  const segments = categories.map(cat => {
-    const sweep = cat.percentage * 360 - GAP_DEG;
-    const start = currentAngle;
-    const end = currentAngle + sweep;
-    currentAngle += cat.percentage * 360;
-    return { ...cat, startAngle: start, endAngle: end };
-  });
-
-  // Label positions (midpoint of arc, outer ring)
-  const labelR = outerR + size * 0.085;
-
   return (
-    <View style={{ width: size, height: size, alignSelf: 'center' }}>
-      {/* <Svg width={size} height={size}>
-        <Circle
-          cx={cx}
-          cy={cy}
-          r={outerR + ringGap}
-          fill="none"
-          stroke="#E8E8E8"
-          strokeWidth={1.5}
-        />
-        <Circle
-          cx={cx}
-          cy={cy}
-          r={innerR - ringGap}
-          fill="none"
-          stroke="#E8E8E8"
-          strokeWidth={1.5}
-        />
+    <Svg width={width} height={VH} viewBox={`0 0 ${VW} ${VH}`}>
+      {/* Outer & inner guide rings */}
+      <Circle
+        cx={cx}
+        cy={cy}
+        r={outerR + 5}
+        fill="none"
+        stroke="#e8e8e8"
+        strokeWidth={1}
+      />
+      <Circle
+        cx={cx}
+        cy={cy}
+        r={innerR - 5}
+        fill="none"
+        stroke="#e8e8e8"
+        strokeWidth={1}
+      />
 
-        {segments.map(seg => {
-          const isSelected = seg.id === selectedId;
-          const mid = (seg.startAngle + seg.endAngle) / 2;
-          const labelPos = polarToCartesian(cx, cy, labelR, mid);
-          return (
-            <G key={seg.id}>
-              <Path
-                d={donutSegment(
-                  cx,
-                  cy,
-                  outerR,
-                  innerR,
-                  seg.startAngle,
-                  seg.endAngle,
-                )}
-                fill={seg.color}
-                opacity={isSelected ? 1 : 0.75}
-              />
-              <Circle cx={labelPos.x} cy={labelPos.y} r={5} fill={seg.color} />
-            </G>
-          );
-        })}
+      {/* Segments */}
+      {segs.map((s, i) => (
+        <Path key={i} d={segPath(s)} fill={s.color} />
+      ))}
 
-        <Circle cx={cx} cy={cy} r={innerR - ringGap - 4} fill="#FAFAFA" />
-        <SvgText
-          x={cx}
-          y={cy + 7}
-          textAnchor="middle"
-          fontSize={18}
-          fontWeight="600"
-          fill="#1A1A1A"
-          fontFamily="Georgia"
-        >
-          Stage
-        </SvgText>
-      </Svg> */}
+      {/* White inner disk */}
+      <Circle cx={cx} cy={cy} r={innerR - 7} fill="#ffffff" />
 
-      {/* Category labels (absolute) */}
-      {/* {segments.map(seg => {
-        const mid = (seg.startAngle + seg.endAngle) / 2;
-        const pos = polarToCartesian(cx, cy, labelR + size * 0.07, mid);
-        const isLeft = pos.x < cx;
-        return (
-          <View
-            key={seg.id + '_label'}
-            style={[
-              styles.chartLabel,
-              {
-                left: pos.x - (isLeft ? 80 : 0),
-                top: pos.y - 18,
-                width: 80,
-                alignItems: isLeft ? 'flex-end' : 'flex-start',
-              },
-            ]}
-          >
-            <Text style={styles.chartLabelName}>{seg.label}</Text>
-            <Text style={[styles.chartLabelPrice, { color: seg.color }]}>
-              {seg.price}
-            </Text>
-          </View>
-        );
-      })} */}
-    </View>
+      {/* Stage text */}
+      <SvgText
+        x={cx}
+        y={cy}
+        textAnchor="middle"
+        fontSize={15}
+        fontWeight="700"
+        fill="#222222"
+      >
+        Stage
+      </SvgText>
+      {/* <Line
+        x1={cx - 24}
+        y1={cy + 3}
+        x2={cx + 24}
+        y2={cy + 3}
+        stroke="#dddddd"
+        strokeWidth={0.8}
+      />
+      <SvgText
+        x={cx}
+        y={cy + 16}
+        textAnchor="middle"
+        fontSize={8}
+        fill="#bbbbbb"
+        letterSpacing={1}
+      >
+        FRONT ROW
+      </SvgText> */}
+
+      {/* ── Labels ── */}
+
+      {/* Golden VIP — top right */}
+      <Circle cx={270} cy={62} r={5} fill="#C9A227" />
+      <Line
+        x1={264}
+        y1={62}
+        x2={252}
+        y2={75}
+        stroke="#C9A227"
+        strokeWidth={0.8}
+      />
+      <SvgText x={275} y={57} fontSize={10} fontWeight="700" fill="#111111">
+        Golden VIP
+      </SvgText>
+      <SvgText x={275} y={70} fontSize={9} fill="#C9A227">
+        JMD $3,500
+      </SvgText>
+
+      {/* Platinum VIP — right */}
+      <Circle cx={292} cy={178} r={5} fill="#1A5C3A" />
+      <Line
+        x1={287}
+        y1={178}
+        x2={275}
+        y2={178}
+        stroke="#1A5C3A"
+        strokeWidth={0.8}
+      />
+      <SvgText x={298} y={173} fontSize={10} fontWeight="700" fill="#111111">
+        Platinum VIP
+      </SvgText>
+      <SvgText x={298} y={186} fontSize={9} fill="#1A5C3A">
+        JMD $5,000
+      </SvgText>
+
+      {/* Regular Seats — bottom center */}
+      <Circle cx={cx + 20} cy={cy + outerR + 10} r={5} fill="#7B4F2E" />
+      <Line
+        x1={cx + 20}
+        y1={cy + outerR + 5}
+        x2={cx + 20}
+        y2={cy + outerR - 2}
+        stroke="#7B4F2E"
+        strokeWidth={0.8}
+      />
+      <SvgText
+        x={cx + 20}
+        y={cy + outerR + 24}
+        textAnchor="middle"
+        fontSize={10}
+        fontWeight="700"
+        fill="#111111"
+      >
+        Regular Seats
+      </SvgText>
+      <SvgText
+        x={cx + 20}
+        y={cy + outerR + 36}
+        textAnchor="middle"
+        fontSize={9}
+        fill="#7B4F2E"
+      >
+        JMD $1,000
+      </SvgText>
+
+      {/* Silver VIP — left */}
+      <Circle cx={68} cy={178} r={5} fill="#A8A8A8" />
+      <Line
+        x1={73}
+        y1={178}
+        x2={85}
+        y2={178}
+        stroke="#A8A8A8"
+        strokeWidth={0.8}
+      />
+      <SvgText
+        x={62}
+        y={173}
+        textAnchor="end"
+        fontSize={10}
+        fontWeight="700"
+        fill="#111111"
+      >
+        Silver VIP
+      </SvgText>
+      <SvgText x={62} y={186} textAnchor="end" fontSize={9} fill="#A8A8A8">
+        JMD $2,000
+      </SvgText>
+    </Svg>
   );
 };
 
 // ─── Seat Card ────────────────────────────────────────────────────────────────
-const SeatCard = ({ category, isSelected, onPress }) => {
-  const isDark = category.id === 'platinum' && isSelected;
-  return (
-    <TouchableOpacity
-      style={[
-        styles.card,
-        isSelected && {
-          borderColor: category.color,
-          borderWidth: 1,
-          backgroundColor: category.color,
-          color: appColors.white,
-        },
-      ]}
-      onPress={onPress}
-      activeOpacity={0.85}
-    >
-      {/* Left badge */}
-      <View style={[styles.badge, { backgroundColor: category.color }]}>
-        <Text style={styles.badgeText}>{category.discount}</Text>
-      </View>
+const SeatCard = ({ category, isSelected, onPress }) => (
+  <TouchableOpacity
+    style={[
+      styles.card,
+      isSelected && {
+        backgroundColor: category.color,
+        borderColor: category.color,
+      },
+    ]}
+    onPress={onPress}
+    activeOpacity={0.85}
+  >
+    <View style={[styles.badge, { backgroundColor: category.color }]}>
+      <Text style={styles.badgeText}>20%</Text>
+    </View>
 
-      {/* Info */}
-      <View style={styles.cardInfo}>
-        <Text
-          style={[
-            styles.cardLabel,
-            isSelected && {
-              color: appColors.white,
-            },
-          ]}
-        >
-          {category.label}
-        </Text>
-        <Text
-          style={[
-            styles.cardSubtitle,
-            isSelected && {
-              color: appColors.white,
-            },
-          ]}
-        >
-          {category.subtitle}
-        </Text>
-        <Text
-          style={[
-            styles.cardPrice,
-            isSelected && {
-              color: appColors.white,
-            },
-          ]}
-        >
-          {category.price}
-        </Text>
-      </View>
+    <View style={styles.cardInfo}>
+      <Text style={[styles.cardLabel, isSelected && styles.whiteText]}>
+        {category.label}
+      </Text>
+      <Text style={[styles.cardSubtitle, isSelected && styles.whiteTextMuted]}>
+        {category.subtitle}
+      </Text>
+      <Text style={[styles.cardPrice, isSelected && styles.whiteText]}>
+        {category.price}
+      </Text>
+    </View>
 
-      {/* Arrow */}
-      <View style={[styles.arrowBtn, { backgroundColor: category.color }]}>
-        <Text style={styles.arrowText}>↗</Text>
-      </View>
-    </TouchableOpacity>
-  );
-};
+    <View style={[styles.arrowBtn, { backgroundColor: category.color }]}>
+      <Text style={styles.arrowText}>↗</Text>
+    </View>
+  </TouchableOpacity>
+);
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 const SeatSelection = ({ navigation }) => {
-  const [selected, setSelected] = useState('platinum');
+  const [selected, setSelected] = useState('golden');
 
   return (
     <>
-      <View style={styles.statusBar}>
-        <StatusBar barStyle="light-content" backgroundColor="#0F7754" />
-      </View>
+      <StatusBar barStyle="light-content" backgroundColor="#0F7754" />
+      <View style={styles.statusBarBg} />
       <SafeAreaView style={styles.safe}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backBtn}
-            onPress={() => navigation?.goBack()}
-          >
+          <TouchableOpacity onPress={() => navigation?.goBack()}>
             <BackIcon />
           </TouchableOpacity>
+          <Text style={styles.headerTitle}>Discover Seat</Text>
           <TouchableOpacity>
             <SettingIcon />
           </TouchableOpacity>
@@ -285,14 +307,12 @@ const SeatSelection = ({ navigation }) => {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.headerTitle}>Discover Seat</Text>
-
-          {/* Chart */}
-          <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-            <StageImg categories={SEAT_CATEGORIES} selectedId={selected} />
+          {/* Donut Chart */}
+          <View style={styles.chartWrap}>
+            <DonutChart />
           </View>
 
-          {/* Subtitle */}
+          {/* Section title */}
           <Text style={styles.sectionTitle}>
             Unlock your perfect{'\n'}seat experience
           </Text>
@@ -308,11 +328,11 @@ const SeatSelection = ({ navigation }) => {
           ))}
         </ScrollView>
 
-        {/* CTA */}
+        {/* CTA Footer */}
         <View style={styles.footer}>
           <TouchableOpacity
             style={styles.ctaBtn}
-            onPress={() => navigation.navigate('InvoiceDetail')}
+            onPress={() => navigation?.navigate('InvoiceDetail')}
           >
             <Text style={styles.ctaText}>Continue</Text>
           </TouchableOpacity>
@@ -324,15 +344,14 @@ const SeatSelection = ({ navigation }) => {
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  statusBar: {
-    backgroundColor: appColors.primary,
-    height: StatusBar.currentHeight,
+  statusBarBg: {
+    backgroundColor: '#0F7754',
+    height: StatusBar.currentHeight || 0,
   },
   safe: {
     flex: 1,
-    backgroundColor: appColors.white,
+    backgroundColor: '#ffffff',
   },
-  // Header
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -340,140 +359,116 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
-  backBtn: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  backIcon: {
-    fontSize: 22,
-    color: appColors.black,
-  },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '700',
-    color: appColors.black,
-    letterSpacing: 0.2,
-    textAlign: 'center',
+    color: '#111111',
+    letterSpacing: -0.2,
   },
-  infoBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1.5,
-    borderColor: '#E0E0E0',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  infoIcon: { fontSize: 15 },
-  // Scroll
   scroll: {
     flex: 1,
-    padding: 16,
-    paddingTop: 0,
   },
   scrollContent: {
     paddingBottom: 24,
   },
-  // Chart label overlay
-  chartLabel: {
-    position: 'absolute',
+  chartWrap: {
+    alignItems: 'center',
+    paddingTop: 4,
   },
-  chartLabelName: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#1A1A1A',
-  },
-  chartLabelPrice: {
-    fontSize: 9,
-    fontWeight: '500',
-    marginTop: 1,
-  },
-  // Section title
   sectionTitle: {
     fontSize: 20,
-    fontWeight: '700',
-    color: appColors.black,
+    fontWeight: '800',
+    color: '#111111',
     textAlign: 'center',
     lineHeight: 28,
-    marginVertical: 40,
-    paddingHorizontal: 32,
+    letterSpacing: -0.3,
+    marginTop: 4,
+    marginBottom: 16,
+    paddingHorizontal: 36,
   },
-  // Cards
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#EFEFEF',
-    padding: 14,
+    marginHorizontal: 14,
+    marginBottom: 10,
+    borderRadius: 16,
+    borderWidth: 1.2,
+    borderColor: '#ebebeb',
+    padding: 13,
     gap: 12,
+    backgroundColor: '#ffffff',
   },
   badge: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
   },
   badgeText: {
     fontSize: 11,
-    fontWeight: '700',
-    color: appColors.white,
+    fontWeight: '800',
+    color: '#ffffff',
+    letterSpacing: 0.3,
   },
   cardInfo: {
     flex: 1,
   },
   cardLabel: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
-    color: '#1A1A1A',
+    color: '#111111',
     marginBottom: 2,
   },
   cardSubtitle: {
-    fontSize: 12,
-    color: '#999999',
+    fontSize: 11,
+    color: '#aaaaaa',
     marginBottom: 4,
   },
   cardPrice: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1A1A1A',
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#111111',
+  },
+  whiteText: {
+    color: '#ffffff',
+  },
+  whiteTextMuted: {
+    color: 'rgba(255,255,255,0.8)',
   },
   arrowBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    width: 34,
+    height: 34,
+    borderRadius: 9,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
   },
   arrowText: {
     fontSize: 16,
-    color: appColors.white,
+    color: '#ffffff',
     fontWeight: '700',
   },
-  // Footer
   footer: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 14,
     paddingBottom: 20,
     paddingTop: 10,
-    backgroundColor: appColors.white,
+    backgroundColor: '#ffffff',
     borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
+    borderTopColor: '#f2f2f2',
   },
   ctaBtn: {
-    backgroundColor: '#1A1A1A',
-    borderRadius: 30,
-    paddingVertical: 16,
+    backgroundColor: '#111111',
+    borderRadius: 28,
+    paddingVertical: 15,
     alignItems: 'center',
   },
   ctaText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
-    color: appColors.white,
-    letterSpacing: 0.4,
+    color: '#ffffff',
+    letterSpacing: 0.2,
   },
 });
 

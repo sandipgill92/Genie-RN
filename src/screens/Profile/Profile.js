@@ -163,14 +163,14 @@ const Profile = ({ navigation }) => {
                 icon={<MovieReminder />}
                 title="Movie reminders"
                 onPress={() => {
-                  navigation.navigate('/MovieReminder');
+                  navigation.navigate('MovieReminder');
                 }}
               />
               <MenuItem2
                 icon={<PaymentSetting />}
                 title="Payment settings"
                 onPress={() => {
-                  navigation.navigate('/PaymentSetting');
+                  navigation.navigate('PaymentSetting');
                 }}
               />
               <MenuItem2

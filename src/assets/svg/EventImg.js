@@ -3,7 +3,7 @@ import * as React from 'react';
 const EventImg = props => (
   <svg
     width={285}
-    height={388}
+    height={250}
     viewBox="0 0 285 388"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"

@@ -43,7 +43,12 @@ const MovieReminder = ({ navigation }) => {
           </Text>
 
           {/* CTA Button */}
-          <TouchableOpacity style={styles.button}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() =>
+              navigation.navigate('Dashboard', { selectedTab: 'MOVIES' })
+            }
+          >
             <Text style={styles.buttonText}>Explore upcomming movies</Text>
           </TouchableOpacity>
         </View>

@@ -3,7 +3,6 @@ import {
   View,
   Text,
   FlatList,
-  ScrollView,
   TouchableOpacity,
   Image,
   ImageBackground,
@@ -13,7 +12,6 @@ import {
 } from 'react-native';
 import { appColors } from '../../utils/appColors';
 import TheatresNearMeIcon from '../../assets/svg/TheatresNearMeIcon';
-import LayberBg from '../../assets/svg/LayberBg';
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 
@@ -97,17 +95,13 @@ const THEATRES = [
 
 // ─── Subcomponents ────────────────────────────────────────────────────────────
 
-function TagPill({ label }) {
+function MovieCard({ movie, navigation, onPress }) {
   return (
-    <View style={styles.tag}>
-      <Text style={styles.tagText}>{label}</Text>
-    </View>
-  );
-}
-
-function MovieCard({ movie, showtimes }) {
-  return (
-    <TouchableOpacity style={styles.movieCard} activeOpacity={0.85}>
+    <TouchableOpacity
+      style={styles.movieCard}
+      activeOpacity={0.85}
+      onPress={onPress}
+    >
       {/* Poster */}
       <Image
         source={{ uri: movie.poster }}
@@ -126,7 +120,7 @@ function MovieCard({ movie, showtimes }) {
   );
 }
 
-function TheatreSection({ theatre }) {
+function TheatreSection({ theatre, navigation }) {
   return (
     <View style={styles.theatreSection}>
       {/* Theatre header */}
@@ -158,7 +152,11 @@ function TheatreSection({ theatre }) {
         contentContainerStyle={styles.moviesList}
         ItemSeparatorComponent={() => <View style={{ width: 12 }} />}
         renderItem={({ item }) => (
-          <MovieCard movie={item} showtimes={theatre.showtimes} />
+          <MovieCard
+            movie={item}
+            showtimes={theatre.showtimes}
+            onPress={() => navigation.navigate('MainMovieScreen')}
+          />
         )}
       />
     </View>
@@ -201,7 +199,9 @@ const TheatresNearMe = ({ navigation }) => {
           ItemSeparatorComponent={() => (
             <View style={styles.sectionSeparator} />
           )}
-          renderItem={({ item }) => <TheatreSection theatre={item} />}
+          renderItem={({ item }) => (
+            <TheatreSection theatre={item} navigation={navigation} />
+          )}
           showsVerticalScrollIndicator={false}
         />
       </SafeAreaView>

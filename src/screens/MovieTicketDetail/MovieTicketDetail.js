@@ -45,7 +45,9 @@ const MovieTicketDetail = ({ navigation }) => {
           {/* CTA Button */}
           <TouchableOpacity
             style={styles.button}
-            onPress={() => navigation.navigate('GenieMoney')}
+            onPress={() =>
+              navigation.navigate('Dashboard', { selectedTab: 'MOVIES' })
+            }
           >
             <Text style={styles.buttonText}>Book Movie Tickets</Text>
           </TouchableOpacity>

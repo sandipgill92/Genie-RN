@@ -36,68 +36,91 @@ import PaymentMathodScreen2 from './src/screens/PaymentMathodScreen2/PaymentMath
 import Ticket from './src/screens/TicketScreen/Ticket';
 import TheatresNearMe from './src/screens/TheatresNearMe/TheatresNearMe';
 import UpcomingMovies from './src/screens/UpcomingMovies/UpcomingMovies';
+import MainMovieScreen from './src/screens/MainMovieScreen/MainMovieScreen';
+import MainMovieScreenOption from './src/screens/MainMovieScreenOption/MainMovieScreenOption';
+import SeatBooking from './src/screens/SeatBooking/SeatBooking';
+import PreBookFood from './src/screens/PreBookFood/PreBookFood';
+import ForgotPasswordEmailNumber from './src/screens/ForgotPasswordEmailNumber/ForgotPasswordEmailNumber';
+import { Provider } from 'react-redux';
+import store from './src/redux/store';
 
 function App() {
   const Stack = createNativeStackNavigator();
   return (
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Splash" component={Splash} />
-        <Stack.Screen name="Guide" component={Guide} />
-        <Stack.Screen name="Guide2" component={Guide2} />
-        <Stack.Screen name="Guide3" component={Guide3} />
-        <Stack.Screen name="Login" component={Login} />
-        <Stack.Screen name="SignUp" component={SignUp} />
-        <Stack.Screen name="OTP" component={OTP} />
-        <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
-        <Stack.Screen name="CreatePassword" component={CreatePassword} />
-        <Stack.Screen
-          name="LocationPermission"
-          component={LocationPermission}
-        />
-        <Stack.Screen name="Location" component={Location} />
-        <Stack.Screen name="Dashboard" component={Dashboard} />
-        <Stack.Screen name="Profile" component={Profile} />
-        <Stack.Screen name="EditProfile" component={EditProfile} />
-        <Stack.Screen name="EventTicket" component={EventTicket} />
-        <Stack.Screen
-          name="EventTicketHIstoryViewDetail"
-          component={EventTicketHIstoryViewDetail}
-        />
-        <Stack.Screen name="MovieTicketDetail" component={MovieTicketDetail} />
-        <Stack.Screen name="GenieMoney" component={GenieMoney} />
-        <Stack.Screen name="MovieReminder" component={MovieReminder} />
-        <Stack.Screen name="PaymentSetting" component={PaymentSetting} />
-        <Stack.Screen name="HowCanWeHelpYou" component={HowCanWeHelpYou} />
-        <Stack.Screen name="Chat" component={Chat} />
-        <Stack.Screen name="EventDashboard" component={EventDashboard} />
-        <Stack.Screen name="SeatSelection" component={SeatSelection} />
-        <Stack.Screen name="InvoiceDetail" component={InvoiceDetail} />
-        <Stack.Screen name="ReviewBooking" component={ReviewBooking} />
-        <Stack.Screen name="AddMoney" component={AddMoney} />
-        <Stack.Screen
-          name="MoneyPaymentMethod"
-          component={MoneyPaymentMethod}
-        />
-        <Stack.Screen
-          name="PaymentAddedSuccessfully"
-          component={PaymentAddedSuccessfully}
-        />
-        <Stack.Screen name="FinalReview" component={FinalReview} />
-        <Stack.Screen
-          name="SelectPaymentMethod"
-          component={SelectPaymentMethod}
-        />
-        <Stack.Screen name="SuccessfulScreen" component={SuccessfulScreen} />
-        <Stack.Screen
-          name="PaymentMathodScreen2"
-          component={PaymentMathodScreen2}
-        />
-        <Stack.Screen name="Ticket" component={Ticket} />
-        <Stack.Screen name="TheatresNearMe" component={TheatresNearMe} />
-        <Stack.Screen name="UpcomingMovies" component={UpcomingMovies} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <Provider store={store}>
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Splash" component={Splash} />
+          <Stack.Screen name="Guide" component={Guide} />
+          <Stack.Screen name="Guide2" component={Guide2} />
+          <Stack.Screen name="Guide3" component={Guide3} />
+          <Stack.Screen name="Login" component={Login} />
+          <Stack.Screen name="SignUp" component={SignUp} />
+          <Stack.Screen name="OTP" component={OTP} />
+          <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
+          <Stack.Screen name="CreatePassword" component={CreatePassword} />
+          <Stack.Screen
+            name="LocationPermission"
+            component={LocationPermission}
+          />
+          <Stack.Screen name="Location" component={Location} />
+          <Stack.Screen name="Dashboard" component={Dashboard} />
+          <Stack.Screen name="Profile" component={Profile} />
+          <Stack.Screen name="EditProfile" component={EditProfile} />
+          <Stack.Screen name="EventTicket" component={EventTicket} />
+          <Stack.Screen
+            name="EventTicketHIstoryViewDetail"
+            component={EventTicketHIstoryViewDetail}
+          />
+          <Stack.Screen
+            name="MovieTicketDetail"
+            component={MovieTicketDetail}
+          />
+          <Stack.Screen name="GenieMoney" component={GenieMoney} />
+          <Stack.Screen name="MovieReminder" component={MovieReminder} />
+          <Stack.Screen name="PaymentSetting" component={PaymentSetting} />
+          <Stack.Screen name="HowCanWeHelpYou" component={HowCanWeHelpYou} />
+          <Stack.Screen name="Chat" component={Chat} />
+          <Stack.Screen name="EventDashboard" component={EventDashboard} />
+          <Stack.Screen name="SeatSelection" component={SeatSelection} />
+          <Stack.Screen name="InvoiceDetail" component={InvoiceDetail} />
+          <Stack.Screen name="ReviewBooking" component={ReviewBooking} />
+          <Stack.Screen name="AddMoney" component={AddMoney} />
+          <Stack.Screen
+            name="MoneyPaymentMethod"
+            component={MoneyPaymentMethod}
+          />
+          <Stack.Screen
+            name="PaymentAddedSuccessfully"
+            component={PaymentAddedSuccessfully}
+          />
+          <Stack.Screen name="FinalReview" component={FinalReview} />
+          <Stack.Screen
+            name="SelectPaymentMethod"
+            component={SelectPaymentMethod}
+          />
+          <Stack.Screen name="SuccessfulScreen" component={SuccessfulScreen} />
+          <Stack.Screen
+            name="PaymentMathodScreen2"
+            component={PaymentMathodScreen2}
+          />
+          <Stack.Screen name="Ticket" component={Ticket} />
+          <Stack.Screen name="TheatresNearMe" component={TheatresNearMe} />
+          <Stack.Screen name="UpcomingMovies" component={UpcomingMovies} />
+          <Stack.Screen name="MainMovieScreen" component={MainMovieScreen} />
+          <Stack.Screen
+            name="MainMovieScreenOption"
+            component={MainMovieScreenOption}
+          />
+          <Stack.Screen name="SeatBooking" component={SeatBooking} />
+          <Stack.Screen name="PreBookFood" component={PreBookFood} />
+          <Stack.Screen
+            name="ForgotPasswordEmailNumber"
+            component={ForgotPasswordEmailNumber}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </Provider>
   );
 }
 

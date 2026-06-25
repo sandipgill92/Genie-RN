@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   StatusBar,
   Platform,
+  Image,
 } from 'react-native';
 import { appColors } from '../../utils/appColors';
 import BackIcon from '../../assets/svg/BackIcon';
@@ -22,6 +23,9 @@ import OfferApplyModal from '../Modal/OfferApplyModal/OfferApplyModal';
 import RemoveCartModal from '../Modal/RemoveCartModal/RemoveCartModal';
 import GenieMoneyModal from '../Modal/GenieMoneyModal/GenieMoneyModal';
 import GenieMoneyModal2 from '../Modal/GenieMoneyModal2/GenieMoneyModal2';
+import DolarGreenIcon from '../../assets/svg/DolarGreenIcon';
+import PopconeIcon from '../../assets/svg/PopconeIcon';
+import TermQuestionIcon from '../../assets/svg/TermQuestionIcon';
 
 // ── Countdown timer helper ──────────────────────────────────────────────────
 function useCountdown(initialSeconds = 281) {
@@ -59,6 +63,87 @@ const OfferRow = ({ icon, label, onPress }) => (
     <RightIcon />
   </TouchableOpacity>
 );
+
+const FOOD_ITEMS = [
+  {
+    id: '1',
+    name: 'Popcorn Combo 1',
+    variant: 'Salted',
+    price: 630,
+    image: {
+      uri: 'https://images.unsplash.com/photo-1585647347483-22b66260dfff?w=400&q=80',
+    },
+  },
+  {
+    id: '2',
+    name: 'Popcorn Combo 1',
+    variant: 'Salted',
+    price: 630,
+    image: {
+      uri: 'https://images.unsplash.com/photo-1585647347483-22b66260dfff?w=400&q=80',
+    },
+  },
+  {
+    id: '3',
+    name: 'Popcorn Combo 2',
+    variant: 'Butter',
+    price: 750,
+    image: {
+      uri: 'https://images.unsplash.com/photo-1585647347483-22b66260dfff?w=400&q=80',
+    },
+  },
+  {
+    id: '4',
+    name: 'Nachos Combo',
+    variant: 'Classic',
+    price: 890,
+    image: {
+      uri: 'https://images.unsplash.com/photo-1585647347483-22b66260dfff?w=400&q=80',
+    },
+  },
+];
+
+const FoodCard = ({ item }) => {
+  const [added, setAdded] = useState(false);
+
+  const handleAdd = () => {
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1500);
+  };
+
+  return (
+    <View style={styles.card2}>
+      <View style={styles.cardImage2}>
+        <PopconeIcon width="100%" height="100%" />
+      </View>
+      <View style={styles.cardBody2}>
+        <Text style={styles.cardName2} numberOfLines={1}>
+          {item.name}
+        </Text>
+        <Text style={styles.cardVariant2} numberOfLines={1}>
+          {item.variant}
+        </Text>
+        <View style={styles.cardFooter2}>
+          <Text style={styles.cardPrice2}>₹{item.price}</Text>
+          <TouchableOpacity
+            style={[styles.addButton2, added && styles.addButtonAdded2]}
+            onPress={handleAdd}
+            activeOpacity={0.8}
+          >
+            <Text
+              style={[
+                styles.addButtonText2,
+                added && styles.addButtonTextAdded2,
+              ]}
+            >
+              {added ? '✓' : 'Add'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+};
 
 // ── Main screen ─────────────────────────────────────────────────────────────
 const ReviewBooking = ({ navigation }) => {
@@ -165,8 +250,21 @@ const ReviewBooking = ({ navigation }) => {
               </Text>
             </View>
           </View>
+          <View style={styles.offerList}>
+            <TouchableOpacity style={styles.offerRow} activeOpacity={0.7}>
+              <View style={styles.offerIcon}>
+                <DolarGreenIcon />
+              </View>
+              <Text
+                style={[styles.offerLabel, { fontSize: 12, color: '#7b7b7b' }]}
+              >
+                Get 50% refund if cancelled today between 01:40 PM - 2:40
+              </Text>
+            </TouchableOpacity>
+          </View>
 
           {/* Offers */}
+          <View style={{ marginTop: 14 }} />
           <SectionHeader title="OFFERS" />
           <View style={styles.offerList}>
             <OfferRow
@@ -178,6 +276,19 @@ const ReviewBooking = ({ navigation }) => {
               icon={<PaymentDealIcon />}
               label="View all payment deals"
             />
+          </View>
+
+          <View>
+            <Text style={styles.sectionTitle2}>Food and beverages</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.scrollContent}
+            >
+              {FOOD_ITEMS.map(item => (
+                <FoodCard key={item.id} item={item} />
+              ))}
+            </ScrollView>
           </View>
 
           {/* Payment Summary */}
@@ -238,11 +349,21 @@ const ReviewBooking = ({ navigation }) => {
           </View>
 
           <View style={{ height: 12 }} />
+          <View style={styles.offerList}>
+            <OfferRow
+              icon={<TermQuestionIcon />}
+              label="Terms and conditions"
+            />
+          </View>
         </ScrollView>
 
         {/* Genie Money bar */}
         <View style={styles.cardShadow}>
-          <TouchableOpacity style={styles.genieBar} activeOpacity={0.8}>
+          <TouchableOpacity
+            style={styles.genieBar}
+            activeOpacity={0.8}
+            onPress={() => setGenieModal2Visible(true)}
+          >
             <View style={styles.genieLeft}>
               <View style={styles.genieIcon}>
                 <GenieMoneyGreenIcon />
@@ -629,6 +750,78 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
     letterSpacing: 0.1,
+  },
+  sectionTitle2: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1A1A1A',
+    marginBottom: 14,
+    paddingHorizontal: 16,
+    marginTop: 24,
+  },
+  scrollContent: {
+    paddingLeft: 16,
+    paddingRight: 8,
+  },
+
+  // Card
+  card2: {
+    width: 148,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+    marginRight: 12,
+    overflow: 'hidden',
+  },
+  cardImage2: {
+    width: '100%',
+    height: 110,
+  },
+  cardBody2: {
+    padding: 10,
+  },
+  cardName2: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1A1A1A',
+    marginBottom: 2,
+  },
+  cardVariant2: {
+    fontSize: 12,
+    color: '#888888',
+    marginBottom: 10,
+  },
+  cardFooter2: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  cardPrice2: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#1A1A1A',
+  },
+
+  // Add Button
+  addButton2: {
+    borderWidth: 1.5,
+    borderColor: appColors.placeholder,
+    borderRadius: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 3,
+  },
+  addButtonAdded2: {
+    backgroundColor: appColors.placeholder,
+    borderColor: appColors.placeholder,
+  },
+  addButtonText2: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: appColors.black,
+  },
+  addButtonTextAdded2: {
+    color: appColors.white,
   },
 });
 

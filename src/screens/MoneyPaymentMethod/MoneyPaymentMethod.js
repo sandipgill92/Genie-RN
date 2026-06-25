@@ -60,7 +60,7 @@ const MoneyPaymentMethod = ({ navigation }) => {
           <TouchableOpacity
             style={styles.optionRow}
             activeOpacity={0.7}
-            onPress={() => navigation.navigate('PaymentAddedSuccessfully')}
+            onPress={() => navigation.navigate('PaymentMathodScreen2')}
           >
             <View style={styles.optionLeft}>
               <View style={styles.paypalWrap}>
