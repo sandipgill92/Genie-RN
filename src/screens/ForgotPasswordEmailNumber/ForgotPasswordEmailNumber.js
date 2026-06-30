@@ -96,7 +96,7 @@ const ForgotPasswordEmailNumber = ({ navigation }) => {
                 placeholder={
                   activeTab === 'email' ? 'ex@gmail.com' : '+91 00000 00000'
                 }
-                placeholderTextColor={appColors.black}
+                placeholderTextColor={'#888'}
                 keyboardType={
                   activeTab === 'email' ? 'email-address' : 'phone-pad'
                 }

@@ -43,6 +43,7 @@ import PreBookFood from './src/screens/PreBookFood/PreBookFood';
 import ForgotPasswordEmailNumber from './src/screens/ForgotPasswordEmailNumber/ForgotPasswordEmailNumber';
 import { Provider } from 'react-redux';
 import store from './src/redux/store';
+import Voucher from './src/screens/Voucher/Voucher';
 
 function App() {
   const Stack = createNativeStackNavigator();
@@ -118,6 +119,7 @@ function App() {
             name="ForgotPasswordEmailNumber"
             component={ForgotPasswordEmailNumber}
           />
+          <Stack.Screen name="Voucher" component={Voucher} />
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>

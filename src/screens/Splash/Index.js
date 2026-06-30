@@ -5,7 +5,7 @@ import SplashIcon from '../../assets/svg/SplashIcon.js';
 const Splash = ({ navigation }) => {
   useEffect(() => {
     setTimeout(() => {
-      navigation.navigate('Login');
+      navigation.navigate('Voucher');
     }, 3000);
   }, []);
 

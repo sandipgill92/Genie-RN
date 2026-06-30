@@ -189,7 +189,9 @@ const Profile = ({ navigation }) => {
               <MenuItem2
                 icon={<FrequentlyQuestion />}
                 title="Frequently asked questions"
-                onPress={() => {}}
+                onPress={() => {
+                  navigation.navigate('HowCanWeHelpYou');
+                }}
               />
               <MenuItem2
                 icon={<Chat />}
