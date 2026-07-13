@@ -44,6 +44,7 @@ import ForgotPasswordEmailNumber from './src/screens/ForgotPasswordEmailNumber/F
 import { Provider } from 'react-redux';
 import store from './src/redux/store';
 import Voucher from './src/screens/Voucher/Voucher';
+import ShareFeedback from './src/screens/ShareFeedback/ShareFeedback';
 
 function App() {
   const Stack = createNativeStackNavigator();
@@ -120,6 +121,7 @@ function App() {
             component={ForgotPasswordEmailNumber}
           />
           <Stack.Screen name="Voucher" component={Voucher} />
+          <Stack.Screen name="ShareFeedback" component={ShareFeedback} />
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>

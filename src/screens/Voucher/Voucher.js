@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import { appColors } from '../../utils/appColors';
 import BackIcon from '../../assets/svg/BackIcon';
-import ClapperboardIcon from '../../assets/svg/ClapperboardIcon';
 
 const Voucher = ({ navigation }) => {
   return (
